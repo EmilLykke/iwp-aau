@@ -1,0 +1,41 @@
+#container {
+    display: flex;
+    justify-content: space-around;
+    height: 100%;
+    align-items: center;
+    overflow-x: hidden;
+
+}
+
+@keyframes drej1 {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+
+}
+
+@keyframes drej2 {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(-360deg);
+    }
+
+}
+
+#comment {
+    animation: drej1 1s linear infinite;
+    transition: ease-in;
+}
+
+#albert {
+    width: 400px;
+    animation: drej2 2s linear infinite;
+    transition: ease-in-out;
+}
