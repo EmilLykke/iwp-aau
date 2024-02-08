@@ -49,8 +49,8 @@ console.log("2. Reversing an array")
  */
 function reverseArray(array) {
     let newArr = []
-    for (let i = array.length - 1; i >= 0; i--) {
-        newArr[array.length - 1 - i] = array[i]
+    for (let i = 0; i < array.length; i++) {
+        newArr[i] = array[array.length - 1 - i]
 
     }
     return newArr
@@ -62,8 +62,8 @@ console.log(reverseArray(["A", "B", "C"]))
 
 function reverseArrayInPlace(array) {
     let newArr = array.slice()
-    for (let i = array.length - 1; i >= 0; i--) {
-        array[array.length - 1 - i] = newArr[i]
+    for (let i = 0; i < array.length; i++) {
+        array[i] = newArr[array.length - 1 - i]
     }
 }
 let arrayValue = [1, 2, 3, 4, 5];
