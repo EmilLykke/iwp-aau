@@ -1,4 +1,5 @@
 // 1. The sum of a range
+console.log("1. The sum of a range")
 /**
  * 
  * @param {number} start 
@@ -41,6 +42,7 @@ console.log(range(5, 2, -1))
 
 
 // 2. Reversing an array
+console.log("2. Reversing an array")
 /**
  * 
  * @param {any[]} array 
@@ -71,7 +73,7 @@ console.log(arrayValue);
 
 
 // 3. Deep comparison
-
+console.log("3. Deep comparison")
 function deepEqual(obj1, obj2){
     if(obj1 === obj2){
         return true
@@ -103,7 +105,14 @@ console.log(deepEqual(obj, {here: {is: "an"}, object: 2}));
 // => true
 
 
+// Fastest way to write it
+console.log(JSON.stringify(obj) === JSON.stringify(obj))
+console.log(JSON.stringify(obj) === JSON.stringify({here: 1, object: 2}))
+console.log(JSON.stringify(obj) === JSON.stringify({here: {is: "an"}, object: 2}))
+
+
 // 4. Flattening
+console.log("4. Flattening")
 let arrays = [[1, 2, 3], [4, 5], [6]];
 
 console.log(arrays.reduce((val, arr)=>val.concat(arr), []))
@@ -115,6 +124,7 @@ console.log(arrays.reduce((val, arr)=>val.concat(arr), []))
 
 // 5. Your own loop
 
+console.log("5. Your own loop")
 // Recursive way
 function loop(val, test, update, body){
     if(!test(val)){
@@ -147,6 +157,7 @@ loop2(3, n => n > 0, n => n - 1, console.log);
 // => 1
 
 // 6. Everything
+console.log("6. Everything")
 function every(array, test){
     for (let i = 0; i < array.length; i++) {
         if (!test(array[i])) {
