@@ -71,6 +71,17 @@ reverseArrayInPlace(arrayValue);
 console.log(arrayValue);
 // => [5, 4, 3, 2, 1]
 
+function reverseArraySmart(array) {
+    let newArr = array.slice()
+    for (let i = 0; i < array.length; i++) {
+        array[i] = newArr.pop()
+    }
+}
+
+let testArray = [1, 2, 3, 4, 5];
+reverseArrayInPlace(testArray);
+console.log(testArray);
+// => [5, 4, 3, 2, 1]
 
 // 3. Deep comparison
 console.log("3. Deep comparison")
