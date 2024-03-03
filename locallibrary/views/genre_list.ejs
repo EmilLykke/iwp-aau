@@ -1,0 +1,19 @@
+<%- include('./parts/head.ejs') %>
+
+<section>
+  <h1><%= title %></h1>
+
+  <% if (genres.length) { %>
+    <ul>
+      <% genres.forEach((val) => { %>
+        <li>
+          <a href="<%= val.url %>"><%= val.name %></a> 
+        </li>
+      <% }); %>
+    </ul>
+  <% } else { %>
+    <p>There are no genres in this libary.</p>
+  <% } %>
+</section>
+
+<%- include('./parts/footer.ejs') %>
