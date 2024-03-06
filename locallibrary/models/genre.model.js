@@ -8,7 +8,7 @@ const Genre = new Schema({
     name: {type: Schema.Types.String, min: 3, max: 100, required: true },
 })
 
-Genre.virtual('url').get(() => {
+Genre.virtual('url').get(function () {
     return `/catalog/genre/${this._id}`
 })
 
