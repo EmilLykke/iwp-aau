@@ -71,3 +71,33 @@ function pad(number, length) {
 }
 
 reset();
+
+
+
+function loadAsset(url,type,callback){
+    let xhr = new XMLHttpRequest()
+    xhr.open('GET',url)
+    xhr.responseType = type
+    xhr.onload = ()=> {
+        callback(xhr.response)
+    }
+
+    xhr.send()
+}
+
+function displayImage(blob){
+    let objectURL = URL.createObjectURL(blob)
+
+    let images = document.querySelector('.images')
+    let image = document.createElement('img')
+    image.src = objectURL
+    images.appendChild(image)
+
+}
+
+loadAsset('images/manymen.jpg','blob',displayImage)
+loadAsset('images/manymen.jpg','blob',displayImage)
+loadAsset('images/manymen.jpg','blob',displayImage)
+loadAsset('images/manymen.jpg','blob',displayImage)
+loadAsset('images/manymen.jpg','blob',displayImage)
+loadAsset('images/manymen.jpg','blob',displayImage)
