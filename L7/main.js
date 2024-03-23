@@ -101,3 +101,16 @@ loadAsset('images/manymen.jpg','blob',displayImage)
 loadAsset('images/manymen.jpg','blob',displayImage)
 loadAsset('images/manymen.jpg','blob',displayImage)
 loadAsset('images/manymen.jpg','blob',displayImage)
+
+
+
+async function myFetch(){
+    let response = await fetch('images/manymen.jpg');
+
+    console.log('myFetch')
+    return response
+}
+
+
+myFetch()
+console.log('efter')
