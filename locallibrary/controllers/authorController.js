@@ -150,9 +150,6 @@ exports.author_update_get = asyncHandler(async (req, res, next) => {
   // Get author, authors and genres for form.
   const author = await Author.findById(req.params.id).exec()
 
-  console.log(author.date_of_birth.toUTCString())
-  
-
   if (author === null) {
     // No results.
     const err = new Error("Author not found");
@@ -162,7 +159,7 @@ exports.author_update_get = asyncHandler(async (req, res, next) => {
 
   res.render("author_form", {
     title: "Update Author",
-    author: author,
+    author:  author,
     errors: undefined
   });
 });
@@ -179,11 +176,10 @@ exports.author_update_post = [
     .trim()
     .isLength({ min: 1 })
     .escape(),
-  body("date_of_birth", "Date of birth must not be empty.")
+  body("date_of_birth" )
     .trim()
-    .isLength({ min: 1 })
     .escape(),
-  body("date_of_death", "")
+  body("date_of_death")
   .trim()
   .escape(),
 
@@ -203,8 +199,6 @@ exports.author_update_post = [
 
     if (!errors.isEmpty()) {
       // There are errors. Render form again with sanitized values/error messages.
-
-      // Get all authors and genres for form
 
       res.render("author_form", {
         title: "Update Author",
