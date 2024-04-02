@@ -5,6 +5,7 @@ const cookieParser = require('cookie-parser');
 const logger = require('morgan');
 const mongoose = require('mongoose')
 const {config} = require('dotenv')
+const expressLayouts = require('express-ejs-layouts')
 
 // Allows us to acces variables from .env
 config()
@@ -27,6 +28,8 @@ connection.once('open', () => {
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
+app.use(expressLayouts)
+app.set('layout', './parts/layout')
 app.set('view engine', 'ejs');
 
 app.use(logger('dev'));
