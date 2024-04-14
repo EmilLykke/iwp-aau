@@ -37,6 +37,8 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname, 'author_images')));
+console.log(path.join(__dirname, 'author_images'))
 
 app.use('/', indexRouter);
 app.use('/users', usersRouter);

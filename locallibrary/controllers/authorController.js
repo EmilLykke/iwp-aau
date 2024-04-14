@@ -2,6 +2,10 @@ const Author = require("../models/author.model");
 const Book = require("../models/book.model");
 const asyncHandler = require("express-async-handler");
 const { body, validationResult } = require("express-validator");
+const multer = require("multer");
+const fs = require("fs");
+
+const upload = multer()
 
 
 // Display list of all Authors.
@@ -66,10 +70,16 @@ exports.author_create_post = [
     .isISO8601()
     .toDate(),
 
+  // Handle file upload
+  upload.single("image_path"),
+
   // Process request after validation and sanitization.
   asyncHandler(async (req, res, next) => {
+
     // Extract the validation errors from a request.
-    const errors = validationResult(req);
+    const errors = validationResult(req.body);
+
+    const image = req.file;
 
     // Create Author object with escaped and trimmed data
     const author = new Author({
@@ -77,7 +87,14 @@ exports.author_create_post = [
       family_name: req.body.family_name,
       date_of_birth: req.body.date_of_birth,
       date_of_death: req.body.date_of_death,
+      image_path: image.originalname,
     });
+
+    try {
+      fs.writeFileSync(`author_images/${image.originalname}`, image.buffer);
+    } catch (error) {
+      errors.push({ msg: "Error saving image" });
+    }
 
     if (!errors.isEmpty()) {
       // There are errors. Render form again with sanitized values/errors messages.
@@ -89,7 +106,6 @@ exports.author_create_post = [
       return;
     } else {
       // Data from form is valid.
-
       // Save author.
       await author.save();
       // Redirect to new author record.
@@ -129,12 +145,21 @@ exports.author_delete_post = asyncHandler(async (req, res, next) => {
     Book.find({ author: req.params.id }, "title summary").exec(),
   ]);
 
+  const errors = []
+
+  try {
+    fs.rmSync(`author_images/${author.image_path}`);
+  } catch (error) {
+    errors.push({ msg: "Error removing image" });
+  }
+
   if (allBooksByAuthor.length > 0) {
     // Author has books. Render in same way as for GET route.
     res.render("author_delete", {
       title: "Delete Author",
       author: author,
       author_books: allBooksByAuthor,
+      errors: errors,
     });
     return;
   } else {
@@ -183,19 +208,37 @@ exports.author_update_post = [
   .trim()
   .escape(),
 
+  // Handle file upload
+  upload.single("image_path"),
+
   // Process request after validation and sanitization.
   asyncHandler(async (req, res, next) => {
     // Extract the validation errors from a request.
-    const errors = validationResult(req);
+    const errors = validationResult(req.body);
+    const image = req.file;
 
-    // Create a Book object with escaped/trimmed data and old id.
-    const author = new Author({
+    const author = await Author.findById(req.params.id).exec();
+
+    try {
+      fs.rmSync(`author_images/${author.image_path}`);
+    } catch (error) { 
+      errors.push({ msg: "Error removing image" });
+    }
+    
+    const newAuthor = new Author({
       first_name: req.body.first_name,
       family_name: req.body.family_name,
       date_of_birth: req.body.date_of_birth,
       date_of_death: req.body.date_of_death,
       _id: req.params.id, // This is required, or a new ID will be assigned!
+      image_path: image.originalname,
     });
+
+    try {
+      fs.writeFileSync(`author_images/${image.originalname}`, image.buffer);
+    } catch (error) {
+      errors.push({ msg: "Error updating image" });
+    }
 
     if (!errors.isEmpty()) {
       // There are errors. Render form again with sanitized values/error messages.
@@ -208,7 +251,7 @@ exports.author_update_post = [
       return;
     } else {
       // Data from form is valid. Update the record.
-      const updatedAuthor = await Author.findByIdAndUpdate(req.params.id, author, {});
+      const updatedAuthor = await Author.findByIdAndUpdate(req.params.id, newAuthor, {});
       // Redirect to book detail page.
       res.redirect(updatedAuthor.url);
     }

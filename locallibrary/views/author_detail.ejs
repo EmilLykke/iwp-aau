@@ -1,7 +1,17 @@
 
 <section>
-  <h1>Author: <%= author.name %></h1>
-  <p><%= author.lifespan %> </p>
+  <div id="author-details">
+    <% if(author.image_url) { %>
+    <div>
+      <img src="<%= author.image_url %>" alt="<%= author.name %>" style="width: 200px; height: 200px; border-radius: 50%">
+    </div>
+    <% } %>
+
+    <div>
+      <h1>Author: <%= author.name %></h1>
+      <p><%= author.lifespan %> </p>
+    </div>
+  </div>
 
   <div style="margin-left:20px;margin-top:20px">
     <h4>Books</h4>
@@ -20,7 +30,7 @@
   </div>
   <hr>
   <p>
-    <a href="<%- author.url %>/delete">Delete Author</a>
+    <a href="<%= author.url %>/delete">Delete Author</a>
   </p>
   <p>
     <a href="<%= author.url %>/update">Update Author</a>

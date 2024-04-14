@@ -8,6 +8,7 @@ const AuthorSchema = new Schema({
   family_name: { type: String, required: true, maxLength: 100 },
   date_of_birth: { type: Date },
   date_of_death: { type: Date },
+  image_path: { type: String },
 });
 
 // Virtual for author's full name
@@ -31,6 +32,10 @@ AuthorSchema.virtual("url").get(function () {
 AuthorSchema.virtual('lifespan').get(function () {
   return this.date_of_birth ? DateTime.fromJSDate(this.date_of_birth).toLocaleString(DateTime.DATE_MED) : '';
 })
+
+AuthorSchema.virtual('image_url').get(function () {
+  return this.image_path ? `/${this.image_path}` : '';
+});
 
 // Export model
 module.exports = mongoose.model("Author", AuthorSchema);
