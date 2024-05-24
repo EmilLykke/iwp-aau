@@ -3,9 +3,10 @@ const express = require('express');
 const path = require('path');
 const cookieParser = require('cookie-parser');
 const logger = require('morgan');
-const mongoose = require('mongoose')
 const {config} = require('dotenv')
 const expressLayouts = require('express-ejs-layouts')
+const connectMongoDB = require('./db/dbMongo');
+const { connectSQLite } = require('./db/dbSQLite');
 
 // Allows us to acces variables from .env
 config()
@@ -16,15 +17,15 @@ const catalogRouter = require("./routes/catalog");
 
 const app = express();
 
-const uri = process.env.MONGODB_PATH;
-mongoose.connect(uri, { dbName: 'local_library' });
-mongoose.set('strictQuery', false);
+// const uri = process.env.MONGODB_PATH;
+// mongoose.connect(uri, { dbName: 'local_library' });
+// mongoose.set('strictQuery', false);
 
-const connection = mongoose.connection;
+// const connection = mongoose.connection;
 
-connection.once('open', () => {
-  console.log('MongoDB database connection established sauccessfully');
-});
+// connection.once('open', () => {
+//   console.log('MongoDB database connection established sauccessfully');
+// });
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -39,6 +40,21 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.static(path.join(__dirname, 'author_images')));
 console.log(path.join(__dirname, 'author_images'))
+
+// connectMongoDB();
+connectSQLite();
+
+app.get('/switch-db', (req, res) => {
+    const dbType = req.query.db; // 'mongo' or 'sqlite'
+
+    if (dbType === 'mongo') {
+        connectMongoDB().then(() => res.send('Switched to MongoDB'));
+    } else if (dbType === 'sqlite') {
+        connectSQLite().then(() => res.send('Switched to SQLite'));
+    } else {
+        res.status(400).send('Invalid database type');
+    }
+});
 
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
