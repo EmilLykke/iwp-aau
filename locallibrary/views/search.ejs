@@ -25,7 +25,10 @@
         <% } %>
 
         <% authors.forEach((author) => { %>
-            <div>
+            <div class="author-search">
+                <% if(author.image_url){ %>
+                <img src="<%= author.image_url %>" alt="<%= author.name %>">
+                <% } %>
                 <h4><a href="<%= author.url %>"><%= author.name %></a></h4>
                 <p><%= author.lifespan %></p>
             </div>

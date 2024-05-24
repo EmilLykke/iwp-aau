@@ -32,5 +32,13 @@
       <% }); %>
     </ul>
   <% } %>
+
+  <% if (fileErrors) { %>
+    <ul>
+      <% fileErrors.forEach(function(error) { %>
+        <li><%= error.msg %></li>
+      <% }); %>
+    </ul>
+  <% } %>
 </section>
 

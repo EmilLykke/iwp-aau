@@ -11,9 +11,12 @@ searchInput.addEventListener('keyup', (event) => {
 searchButton.addEventListener('click', () => {
     const searchValue = searchInput.value;
 
+    // Trims the search value and removes any special characters
+    const trimmedSearchValue = searchValue.replace(/[^a-zA-Z0-9 ]/g, "");
+
     // Use URLSearchParams to make sure that the search value is properly encoded
     const searchParams = new URLSearchParams();
-    searchParams.append('q', searchValue);
+    searchParams.append('q', trimmedSearchValue);
     
     window.location.replace(`/catalog/search?${searchParams.toString()}`);
 });

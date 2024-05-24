@@ -185,7 +185,8 @@ exports.author_update_get = asyncHandler(async (req, res, next) => {
   res.render("author_form", {
     title: "Update Author",
     author:  author,
-    errors: undefined
+    errors: undefined,
+    fileErrors: undefined
   });
 });
 
@@ -214,15 +215,17 @@ exports.author_update_post = [
   // Process request after validation and sanitization.
   asyncHandler(async (req, res, next) => {
     // Extract the validation errors from a request.
-    const errors = validationResult(req.body);
+    const errors = validationResult(req.body)
+    const fileErrors = []
     const image = req.file;
+
 
     const author = await Author.findById(req.params.id).exec();
 
     try {
       fs.rmSync(`author_images/${author.image_path}`);
     } catch (error) { 
-      errors.push({ msg: "Error removing image" });
+      fileErrors.push({ msg: "Error removing image" });
     }
     
     const newAuthor = new Author({
@@ -237,16 +240,17 @@ exports.author_update_post = [
     try {
       fs.writeFileSync(`author_images/${image.originalname}`, image.buffer);
     } catch (error) {
-      errors.push({ msg: "Error updating image" });
+      fileErrors.push({ msg: "Error updating image" });
     }
 
-    if (!errors.isEmpty()) {
+    if (!errors.isEmpty() && fileErrors.length > 0) {
       // There are errors. Render form again with sanitized values/error messages.
 
       res.render("author_form", {
         title: "Update Author",
         author: author,
         errors: errors.array(),
+        fileErrors: fileErrors,
       });
       return;
     } else {
