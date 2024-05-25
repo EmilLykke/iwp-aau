@@ -24,8 +24,8 @@ exports.author_list = asyncHandler(async (req, res, next) => {
 exports.author_detail = asyncHandler(async (req, res, next) => {
   // Get details of author and all their books (in parallel)
   const [author, allBooksByAuthor] = await Promise.all([
-    await findAuthorById(req.params.id),
-    await findAllBooks({author: req.params.id}),
+    findAuthorById(req.params.id),
+    findAllBooks({author: req.params.id}),
   ]);
 
   if (author === null) {
@@ -123,8 +123,8 @@ exports.author_create_post = [
 exports.author_delete_get = asyncHandler(async (req, res, next) => {
   // Get details of author and all their books (in parallel)
   const [author, allBooksByAuthor] = await Promise.all([
-    Author.findById(req.params.id).exec(),
-    Book.find({ author: req.params.id }, "title summary").exec(),
+    findAuthorById(req.params.id),
+    findAllBooks({ author: req.params.id })
   ]);
 
   if (author === null) {
@@ -136,6 +136,7 @@ exports.author_delete_get = asyncHandler(async (req, res, next) => {
     title: "Delete Author",
     author: author,
     author_books: allBooksByAuthor,
+    errors: [],
   });
 });
 

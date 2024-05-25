@@ -83,14 +83,17 @@ async function findAllBooks(filter, order) {
         // Assuming a Author model exists for Mongoose
         return await BookMongo.find(filter).exec()
     } else if (global.dbType === 'sqlite') {
-        const order2 = Object.keys(order).map(key => ([key, 'ASC']));
 
-        const books = await BookSQLite.findAll({where: filter, order: order2, include: [AuthorSQLite]});
+
+        const order2 = order ?  Object.keys(order).map(key => ([key, 'ASC'])) : [[]];
+
+        const books = order ? await BookSQLite.findAll({where: filter, order: order2, include: [AuthorSQLite, GenreSQLite]}) : await BookSQLite.findAll({where: filter, include: [AuthorSQLite, GenreSQLite]});
 
 
         const booksWithAuthor = books.map(book => ({
             ...book.dataValues,
             url: book.url(),
+            genre: [book.Genre.dataValues],
             author: {
                 name: book.Author.name(),
                 url: book.Author.url(),
