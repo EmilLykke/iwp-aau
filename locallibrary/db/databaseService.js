@@ -50,7 +50,7 @@ async function findAllAuthors() {
             url: author.url(),
             lifespan: author.lifespan(),
             image_url: author.image_url(),
-            ...author
+            ...author.dataValues
         }));
     }
 }
@@ -60,13 +60,12 @@ async function findAuthorById(id) {
         return await AuthorMongo.findById(id).exec();
     } else if (dbType === 'sqlite') {
         const author = await AuthorSQLite.findByPk(id);
-        console.log(author);
         return {
             name: author.name(),
             url: author.url(),
             lifespan: author.lifespan(),
             image_url: author.image_url(),
-            ...author
+            ...author.dataValues
         };
     }
 }
@@ -81,7 +80,7 @@ async function findAllBooks(filter) {
         const books = await BookSQLite.findAll(filter);
         return books.map(book => ({
             url: book.url(),
-            ...book
+            ...book.dataValues
         }));
     }   
 }
@@ -96,7 +95,7 @@ async function findBookById(id, filter) {
         }}) : await BookSQLite.findByPk(id);
         return {
             url: book.url(),
-            ...book
+            ...book.dataValues
         };
     }
 }

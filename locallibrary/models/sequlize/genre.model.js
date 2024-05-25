@@ -3,6 +3,11 @@ const { sequelize } = require('../../db/dbSQLite');
 const { DataTypes } = require('sequelize')
 
 const Genre = sequelize.define('Genre', {
+  id: {
+    type: DataTypes.INTEGER,
+    primaryKey: true,
+    autoIncrement: true,
+  },
     // Maybe should be enum in furture
     name: {
         type: DataTypes.TEXT,

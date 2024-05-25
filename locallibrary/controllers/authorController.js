@@ -13,7 +13,7 @@ const upload = multer()
 exports.author_list = asyncHandler(async (req, res, next) => {
   // const allAuthors = await Author.find().sort({ family_name: 1 }).exec();
   const allAuthors = await findAllAuthors();
-  console.log(allAuthors);
+
   res.render("author_list", {
     title: "Author List",
     author_list: allAuthors,

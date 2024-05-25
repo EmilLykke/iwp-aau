@@ -5,6 +5,11 @@ const GenreSchema = require('./genre.model');
 const { DataTypes } = require('sequelize')
 
 const BookSchema = sequelize.define('Book',{
+  id: {
+    type: DataTypes.INTEGER,
+    primaryKey: true,
+    autoIncrement: true,
+  },
   title: { type: DataTypes.TEXT, required: true },
   author: { type: DataTypes.INTEGER, primaryKey: true, required: true },
   summary: { type: DataTypes.TEXT, required: true },
