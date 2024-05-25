@@ -5,6 +5,13 @@ def create_database():
     conn = sqlite3.connect('./db/data.db')
     cursor = conn.cursor()
 
+    # Drop existing tables in the reverse order of creation due to foreign key constraints
+    cursor.execute('DROP TABLE IF EXISTS BookInstance')
+    cursor.execute('DROP TABLE IF EXISTS Book')
+    cursor.execute('DROP TABLE IF EXISTS Genre')
+    cursor.execute('DROP TABLE IF EXISTS Author')
+
+
     # Create the tables
     cursor.execute('''
     CREATE TABLE IF NOT EXISTS Author (
@@ -28,10 +35,11 @@ def create_database():
     CREATE TABLE IF NOT EXISTS Book (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         title TEXT NOT NULL,
-        author_id INTEGER NOT NULL,
+        author INTEGER NOT NULL,
         summary TEXT NOT NULL,
         isbn TEXT NOT NULL,
-        FOREIGN KEY (author_id) REFERENCES Author (id)
+        genre TEXT NOT NULL,
+        FOREIGN KEY (author) REFERENCES Author (id)
     )
     ''')
 
@@ -45,6 +53,7 @@ def create_database():
         FOREIGN KEY (book_id) REFERENCES Book (id)
     )
     ''')
+
 
     # Insert data into tables
     authors = [
@@ -60,10 +69,10 @@ def create_database():
     cursor.executemany('INSERT INTO Genre (name) VALUES (?)', genres)
 
     books = [
-        ('1984', 1, 'A dystopian novel.', '978-0451524935'),
-        ('Pride and Prejudice', 2, 'A romantic novel.', '978-1503290563')
+        ('1984', 1, 'A dystopian novel.', '978-0451524935', 'Science Fiction'),
+        ('Pride and Prejudice', 2, 'A romantic novel.', '978-1503290563', 'Fiction')
     ]
-    cursor.executemany('INSERT INTO Book (title, author_id, summary, isbn) VALUES (?, ?, ?, ?)', books)
+    cursor.executemany('INSERT INTO Book (title, author, summary, isbn, genre) VALUES (?, ?, ?, ?, ?)', books)
 
     book_instances = [
         (1, 'Random House', 'Available', '2024-12-31'),

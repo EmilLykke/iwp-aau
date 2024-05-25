@@ -1,15 +1,24 @@
-const mongoose = require('mongoose')
+const { sequelize } = require('../../db/dbSQLite');
 
-const Schema = mongoose.Schema
+const { DataTypes } = require('sequelize')
 
-
-const Genre = new Schema({
+const Genre = sequelize.define('Genre', {
     // Maybe should be enum in furture
-    name: {type: Schema.Types.String, min: 3, max: 100, required: true },
+    name: {
+        type: DataTypes.TEXT,
+        min: 3,
+        max: 100,
+        required: true
+     },
+}, {
+    tableName: "Genre",
+    timestamps: false,
+    createdAt: false,
+    updatedAt: false,
 })
 
-Genre.virtual('url').get(function () {
-    return `/catalog/genre/${this._id}`
-})
+Genre.prototype.url = function () {
+    return `/catalog/genre/${this.id}`
+}
 
-module.exports = mongoose.model('Genre', Genre)
+module.exports = Genre;

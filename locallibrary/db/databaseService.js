@@ -1,8 +1,15 @@
 // Importing connection modules
 const connectMongoDB = require('./dbMongo');
 const { connectSQLite } = require('./dbSQLite');
+
+// Import Author models
 const AuthorMongo = require('../models/author.model');
 const AuthorSQLite = require('../models/sequlize/author.model');
+
+// Import Book models
+const BookMongo = require('../models/book.model');
+const BookSQLite = require('../models/sequlize/book.model');
+
 
 let dbType = 'sqlite'; // Default to mongo
 
@@ -30,14 +37,14 @@ async function switchDatabase(type) {
 }
 
 
+// Author database operations
 async function findAllAuthors() {
     if (dbType === 'mongo') {
         // Assuming a Author model exists for Mongoose
         return await AuthorMongo.find().sort({ family_name: 1 }).exec()
     } else if (dbType === 'sqlite') {
         // Assuming a Author model exists for Sequelize
-        const authors = await AuthorSQLite.findAll();
-        console.log(authors[0].url);
+        const authors = await AuthorSQLite.findAll({ order: [['family_name', 'ASC']] });
         return authors.map(author => ({
             name: author.name(),
             url: author.url(),
@@ -48,4 +55,50 @@ async function findAllAuthors() {
     }
 }
 
-module.exports = { switchDatabase, findAllAuthors };
+async function findAuthorById(id) {
+    if (dbType === 'mongo') {
+        return await AuthorMongo.findById(id).exec();
+    } else if (dbType === 'sqlite') {
+        const author = await AuthorSQLite.findByPk(id);
+        console.log(author);
+        return {
+            name: author.name(),
+            url: author.url(),
+            lifespan: author.lifespan(),
+            image_url: author.image_url(),
+            ...author
+        };
+    }
+}
+
+// Book database operations
+async function findAllBooks(filter) {
+     if (dbType === 'mongo') {
+        // Assuming a Author model exists for Mongoose
+        return await BookMongo.find(filter).exec()
+    } else if (dbType === 'sqlite') {
+        // Assuming a Author model exists for Sequelize
+        const books = await BookSQLite.findAll(filter);
+        return books.map(book => ({
+            url: book.url(),
+            ...book
+        }));
+    }   
+}
+
+async function findBookById(id, filter) {
+    if(dbType === 'mongo'){
+        return filter ? await BookMongo.find({_id: id, ...filter}).exec() : await BookMongo.findById(id).exec();
+    } else if(dbType === 'sqlite'){
+        const book = filter ? await BookSQLite.findOne({where: {
+            id,
+            ...filter
+        }}) : await BookSQLite.findByPk(id);
+        return {
+            url: book.url(),
+            ...book
+        };
+    }
+}
+
+module.exports = { switchDatabase, findAllAuthors, findAuthorById, findAllBooks, findBookById};

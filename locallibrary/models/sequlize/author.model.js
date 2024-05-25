@@ -41,7 +41,7 @@ AuthorSchema.prototype.url = function () {
 };
 
 AuthorSchema.prototype.lifespan=function () {
-  return this.date_of_birth ? DateTime.fromJSDate(this.date_of_birth).toLocaleString(DateTime.DATE_MED) : '';
+  return this.date_of_birth ? DateTime.fromJSDate(new Date(this.date_of_birth)).toLocaleString(DateTime.DATE_MED) : '';
 }
 
 AuthorSchema.prototype.image_url=function () {

@@ -4,7 +4,7 @@ const asyncHandler = require("express-async-handler");
 const { body, validationResult } = require("express-validator");
 const multer = require("multer");
 const fs = require("fs");
-const { findAllAuthors } = require("../db/databaseService");
+const { findAllAuthors, findAuthorById, findAllBooks } = require("../db/databaseService");
 
 const upload = multer()
 
@@ -24,8 +24,8 @@ exports.author_list = asyncHandler(async (req, res, next) => {
 exports.author_detail = asyncHandler(async (req, res, next) => {
   // Get details of author and all their books (in parallel)
   const [author, allBooksByAuthor] = await Promise.all([
-    Author.findById(req.params.id).exec(),
-    Book.find({ author: req.params.id }, "title summary").exec(),
+    await findAuthorById(req.params.id),
+    await findAllBooks({author: req.params.id}),
   ]);
 
   if (author === null) {
