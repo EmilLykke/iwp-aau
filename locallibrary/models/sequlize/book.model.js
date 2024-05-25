@@ -14,7 +14,7 @@ const BookSchema = sequelize.define('Book',{
   author: { type: DataTypes.INTEGER, primaryKey: true, required: true },
   summary: { type: DataTypes.TEXT, required: true },
   isbn: { type: DataTypes.TEXT, required: true },
-  genre: [{ type: DataTypes.TEXT, primaryKey: true}],
+  genre: [{ type: DataTypes.INTEGER, primaryKey: true}],
 }, {
   tableName: "Book",
   timestamps: false,
@@ -31,7 +31,7 @@ BookSchema.prototype.url = function () {
 // https://sequelize.org/docs/v7/associations/belongs-to/
 BookSchema.belongsTo(AuthorSchema, { foreignKey: {name: 'author'}, targetKey: 'id'});
 
-BookSchema.belongsTo(GenreSchema, { foreignKey: {name: 'genre'}, targetKey: 'name'});
+BookSchema.belongsTo(GenreSchema, { foreignKey: {name: 'genre'}, targetKey: 'id'});
 
 // Export model
 module.exports = BookSchema;

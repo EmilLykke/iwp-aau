@@ -5,6 +5,7 @@ const BookInstance = require("../models/bookinstance.model");
 
 const asyncHandler = require("express-async-handler");
 const { body, validationResult } = require("express-validator");
+const { findAllBooks, findAllBookInstances, findBookById } = require("../db/databaseService");
 
 
 exports.index = asyncHandler(async (req, res, next) => {
@@ -37,10 +38,8 @@ exports.index = asyncHandler(async (req, res, next) => {
 
 // Display list of all books.
 exports.book_list = asyncHandler(async (req, res, next) => {
-  const allBooks = await Book.find({}, "title author")
-    .sort({ title: 1 })
-    .populate("author")
-    .exec();
+
+  const allBooks = await findAllBooks({},{title: 1})
 
   res.render("book_list", { title: "Book List", book_list: allBooks });
 });
@@ -50,9 +49,11 @@ exports.book_list = asyncHandler(async (req, res, next) => {
 exports.book_detail = asyncHandler(async (req, res, next) => {
   // Get details of books, book instances for specific book
   const [book, bookInstances] = await Promise.all([
-    Book.findById(req.params.id).populate("author").populate("genre").exec(),
-    BookInstance.find({ book: req.params.id }).exec(),
+    findBookById(req.params.id),
+    findAllBookInstances({ book: req.params.id }),
   ]);
+
+  console.log(bookInstances[0].book)
 
   if (book === null) {
     // No results.

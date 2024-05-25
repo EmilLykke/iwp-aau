@@ -49,8 +49,10 @@ app.get('/switch-db', (req, res) => {
 
     if (dbType === 'mongo') {
         connectMongoDB().then(() => res.send('Switched to MongoDB'));
+        global.dbType = 'mongo';
     } else if (dbType === 'sqlite') {
         connectSQLite().then(() => res.send('Switched to SQLite'));
+        global.dbType = 'sqlite';
     } else {
         res.status(400).send('Invalid database type');
     }
