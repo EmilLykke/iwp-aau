@@ -63,7 +63,6 @@ async function findAllAuthors() {
 }
 
 async function findAuthorById(id) {
-    console.log(global.dbType);
     if (global.dbType === 'mongo') {
         return await AuthorMongo.findById(id).exec();
     } else if (global.dbType === 'sqlite') {
@@ -86,7 +85,7 @@ async function findAllBooks(filter, order) {
     } else if (global.dbType === 'sqlite') {
         const order2 = Object.keys(order).map(key => ([key, 'ASC']));
 
-        const books = await BookSQLite.findAll({where: filter, order: order2, include: [ {model: AuthorSQLite}]});
+        const books = await BookSQLite.findAll({where: filter, order: order2, include: [AuthorSQLite]});
 
 
         const booksWithAuthor = books.map(book => ({
