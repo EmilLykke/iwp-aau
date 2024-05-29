@@ -11,8 +11,8 @@ const AuthorSchema = sequelize.define('Author', {
   },
   first_name: { type: DataTypes.TEXT, required: true, maxLength: 100 },
   family_name: { type: DataTypes.TEXT, required: true, maxLength: 100 },
-  date_of_birth: { type: DataTypes.DATE },
-  date_of_death: { type: DataTypes.DATE },
+  date_of_birth: { type: DataTypes.TEXT },
+  date_of_death: { type: DataTypes.TEXT },
   image_path: { type: DataTypes.TEXT },
   
 }, {

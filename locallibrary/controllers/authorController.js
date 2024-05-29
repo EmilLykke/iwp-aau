@@ -1,10 +1,8 @@
-const Author = require("../models/author.model");
-const Book = require("../models/book.model");
 const asyncHandler = require("express-async-handler");
 const { body, validationResult } = require("express-validator");
 const multer = require("multer");
 const fs = require("fs");
-const { findAllAuthors, findAuthorById, findAllBooks } = require("../db/databaseService");
+const { findAllAuthors, findAuthorById, findAllBooks, createAuthor, deleteAuthor, updateAuthor } = require("../db/databaseService");
 
 const upload = multer()
 
@@ -44,7 +42,7 @@ exports.author_detail = asyncHandler(async (req, res, next) => {
 
 // Display Author create form on GET.
 exports.author_create_get = (req, res, next) => {
-  res.render("author_form", { title: "Create Author",errors: undefined, author: undefined  });
+  res.render("author_form", { title: "Create Author",errors: undefined, fileErrors: undefined, author: undefined  });
 };
 
 // Handle Author create on POST.
@@ -66,12 +64,10 @@ exports.author_create_post = [
     .withMessage("Family name has non-alphanumeric characters."),
   body("date_of_birth", "Invalid date of birth")
     .optional({ values: "falsy" })
-    .isISO8601()
-    .toDate(),
+    .isISO8601(),
   body("date_of_death", "Invalid date of death")
     .optional({ values: "falsy" })
-    .isISO8601()
-    .toDate(),
+    .isISO8601(),
 
   // Handle file upload
   upload.single("image_path"),
@@ -81,22 +77,25 @@ exports.author_create_post = [
 
     // Extract the validation errors from a request.
     const errors = validationResult(req.body);
+    const fileErrors = [];
 
     const image = req.file;
 
     // Create Author object with escaped and trimmed data
-    const author = new Author({
+    const author = {
       first_name: req.body.first_name,
       family_name: req.body.family_name,
-      date_of_birth: req.body.date_of_birth,
-      date_of_death: req.body.date_of_death,
-      image_path: image.originalname,
-    });
+      date_of_birth: req.body.date_of_birth || '',
+      date_of_death: req.body.date_of_death || '',
+      image_path: image ? image.originalname : '',
+    };
 
-    try {
-      fs.writeFileSync(`author_images/${image.originalname}`, image.buffer);
-    } catch (error) {
-      errors.push({ msg: "Error saving image" });
+    if(image){
+      try {
+        fs.writeFileSync(`author_images/${image.originalname}`, image.buffer);
+      } catch (error) {
+        fileErrors.push({ msg: "Error saving image" });
+      }
     }
 
     if (!errors.isEmpty()) {
@@ -105,14 +104,15 @@ exports.author_create_post = [
         title: "Create Author",
         author: author,
         errors: errors.array(),
+        fileErrors,
       });
       return;
     } else {
       // Data from form is valid.
       // Save author.
-      await author.save();
+      const newAuthor = await createAuthor(author);
       // Redirect to new author record.
-      res.redirect(author.url);
+      res.redirect(newAuthor);
     }
   }),
 ];
@@ -145,16 +145,18 @@ exports.author_delete_get = asyncHandler(async (req, res, next) => {
 exports.author_delete_post = asyncHandler(async (req, res, next) => {
   // Get details of author and all their books (in parallel)
   const [author, allBooksByAuthor] = await Promise.all([
-    Author.findById(req.params.id).exec(),
-    Book.find({ author: req.params.id }, "title summary").exec(),
+    findAuthorById(req.params.id),
+    findAllBooks({ author: req.params.id })
   ]);
 
   const errors = []
 
-  try {
-    fs.rmSync(`author_images/${author.image_path}`);
-  } catch (error) {
-    errors.push({ msg: "Error removing image" });
+  if(!!author.image_path){
+    try {
+      fs.rmSync(`author_images/${author.image_path}`);
+    } catch (error) {
+      errors.push({ msg: "Error removing image" });
+    }
   }
 
   if (allBooksByAuthor.length > 0) {
@@ -168,7 +170,7 @@ exports.author_delete_post = asyncHandler(async (req, res, next) => {
     return;
   } else {
     // Author has no books. Delete object and redirect to the list of authors.
-    await Author.findByIdAndDelete(req.body.authorid);
+    await deleteAuthor(req.body.authorid);
     res.redirect("/catalog/authors");
   }
 });
@@ -177,7 +179,7 @@ exports.author_delete_post = asyncHandler(async (req, res, next) => {
 // Display Author update form on GET.
 exports.author_update_get = asyncHandler(async (req, res, next) => {
   // Get author, authors and genres for form.
-  const author = await Author.findById(req.params.id).exec()
+  const author = await findAuthorById(req.params.id);
 
   if (author === null) {
     // No results.
@@ -224,27 +226,31 @@ exports.author_update_post = [
     const image = req.file;
 
 
-    const author = await Author.findById(req.params.id).exec();
+    const author = await findAuthorById(req.params.id);
 
-    try {
-      fs.rmSync(`author_images/${author.image_path}`);
-    } catch (error) { 
-      fileErrors.push({ msg: "Error removing image" });
+    if(image){
+      try {
+        fs.rmSync(`author_images/${author.image_path}`);
+      } catch (error) { 
+        fileErrors.push({ msg: "Error removing image" });
+      }
     }
     
-    const newAuthor = new Author({
+    const newAuthor = {
+      _id: req.params.id, // This is required, or a new ID will be assigned!
       first_name: req.body.first_name,
       family_name: req.body.family_name,
-      date_of_birth: req.body.date_of_birth,
-      date_of_death: req.body.date_of_death,
-      _id: req.params.id, // This is required, or a new ID will be assigned!
-      image_path: image.originalname,
-    });
+      date_of_birth: req.body.date_of_birth || '',
+      date_of_death: req.body.date_of_death || '',
+      image_path: image ? image.originalname : '',
+    };
 
-    try {
-      fs.writeFileSync(`author_images/${image.originalname}`, image.buffer);
-    } catch (error) {
-      fileErrors.push({ msg: "Error updating image" });
+    if(image){
+      try {
+        fs.writeFileSync(`author_images/${image.originalname}`, image.buffer);
+      } catch (error) {
+        fileErrors.push({ msg: "Error updating image" });
+      }
     }
 
     if (!errors.isEmpty() && fileErrors.length > 0) {
@@ -259,9 +265,9 @@ exports.author_update_post = [
       return;
     } else {
       // Data from form is valid. Update the record.
-      const updatedAuthor = await Author.findByIdAndUpdate(req.params.id, newAuthor, {});
+      const updatedAuthor = await updateAuthor(req.params.id, newAuthor);
       // Redirect to book detail page.
-      res.redirect(updatedAuthor.url);
+      res.redirect(updatedAuthor);
     }
   }),
 ];

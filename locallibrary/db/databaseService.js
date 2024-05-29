@@ -64,7 +64,11 @@ async function findAllAuthors() {
 
 async function findAuthorById(id) {
     if (global.dbType === 'mongo') {
-        return await AuthorMongo.findById(id).exec();
+        const author = await AuthorMongo.findById(id).exec();
+        return {
+            ...author,
+            id: author._id,
+        }
     } else if (global.dbType === 'sqlite') {
         const author = await AuthorSQLite.findByPk(id);
         return {
@@ -77,6 +81,41 @@ async function findAuthorById(id) {
     }
 }
 
+async function createAuthor(author) {
+    if (global.dbType === 'mongo') {
+        const newAuthor = new AuthorMongo(author);
+        await newAuthor.save()
+        return newAuthor.url;
+    } else if (global.dbType === 'sqlite') {
+        const newAuthor = await AuthorSQLite.create(author)
+        return newAuthor.url();
+    }
+}
+
+async function updateAuthor(id, author) {
+    if(global.dbType === 'mongo'){
+        const newAuthor = new AuthorMongo(author);
+        const updatedAuthor = await AuthorMongo.findByIdAndUpdate(id, newAuthor, {}).exec();
+        return updatedAuthor.url;
+    } else if(global.dbType === 'sqlite'){
+        delete author._id;
+        await AuthorSQLite.update(author, {where: {id}});
+        const authorInstance = await AuthorSQLite.findByPk(id);
+        return authorInstance.url();
+
+    }
+
+}
+
+async function deleteAuthor(id) {
+    if(global.dbType === 'mongo'){
+        return await AuthorMongo.findByIdAndDelete(id).exec();
+    } else if(global.dbType === 'sqlite'){
+        console.log(id);
+        return await AuthorSQLite.destroy({where: {id}});
+    }
+}
+
 // Book database operations
 async function findAllBooks(filter, order) {
      if (global.dbType === 'mongo') {
@@ -85,7 +124,7 @@ async function findAllBooks(filter, order) {
     } else if (global.dbType === 'sqlite') {
 
 
-        const order2 = order ?  Object.keys(order).map(key => ([key, 'ASC'])) : [[]];
+        const order2 = order ?  Object.keys(order).map(key => ([key, 'ASC'])) : undefined;
 
         const books = order ? await BookSQLite.findAll({where: filter, order: order2, include: [AuthorSQLite, GenreSQLite]}) : await BookSQLite.findAll({where: filter, include: [AuthorSQLite, GenreSQLite]});
 
@@ -199,4 +238,4 @@ async function findBookInstanceById(id) {
     }
 }
 
-module.exports = { switchDatabase, findAllAuthors, findAuthorById, findAllBooks, findBookById, findAllBookInstances, findBookInstanceById};
+module.exports = { switchDatabase, findAllAuthors, findAuthorById, createAuthor, updateAuthor, deleteAuthor, findAllBooks, findBookById, findAllBookInstances, findBookInstanceById};
