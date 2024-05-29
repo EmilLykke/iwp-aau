@@ -180,6 +180,7 @@ exports.author_delete_post = asyncHandler(async (req, res, next) => {
 exports.author_update_get = asyncHandler(async (req, res, next) => {
   // Get author, authors and genres for form.
   const author = await findAuthorById(req.params.id);
+  console.log(author)
 
   if (author === null) {
     // No results.

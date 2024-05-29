@@ -65,9 +65,14 @@ async function findAllAuthors() {
 async function findAuthorById(id) {
     if (global.dbType === 'mongo') {
         const author = await AuthorMongo.findById(id).exec();
+
         return {
-            ...author,
+            ...author._doc,
             id: author._id,
+            name: author.name,
+            url: author.url,
+            lifespan: author.lifespan,
+            image_url: author.image_url,
         }
     } else if (global.dbType === 'sqlite') {
         const author = await AuthorSQLite.findByPk(id);
