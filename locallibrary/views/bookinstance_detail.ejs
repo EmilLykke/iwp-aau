@@ -1,7 +1,7 @@
 
 
 <section>
-  <h1>ID: <%= bookinstance._id %></h1>
+  <h1>ID: <%= bookinstance.id %></h1>
 
   <p><strong>Title: </strong>
     <a href="<%= bookinstance.book.url %>"><%= bookinstance.book.title %></a>
@@ -19,7 +19,7 @@
   </p>
 
   <% if (bookinstance.status != 'Available') { %>
-    <p><strong>Due back:</strong> <%= bookinstance.due_back %></p>
+    <p><strong>Due back:</strong> <%= bookinstance.due_back_formatted %></p>
   <% } %>
   
   <hr>

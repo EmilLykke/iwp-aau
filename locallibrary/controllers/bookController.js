@@ -1,11 +1,8 @@
 const Book = require("../models/book.model");
-const Author = require("../models/author.model");
-const Genre = require("../models/genre.model");
-const BookInstance = require("../models/bookinstance.model");
 
 const asyncHandler = require("express-async-handler");
 const { body, validationResult } = require("express-validator");
-const { findAllBooks, findAllBookInstances, findBookById } = require("../db/databaseService");
+const { findAllBooks, findAllBookInstances, findBookById, countAuthor, countGenre, countBookInstance, countBook, findAllAuthors, findAllGenres, createBook, updateBook, deleteBook } = require("../db/databaseService");
 
 
 exports.index = asyncHandler(async (req, res, next) => {
@@ -17,11 +14,11 @@ exports.index = asyncHandler(async (req, res, next) => {
     numAuthors,
     numGenres,
   ] = await Promise.all([
-    Book.countDocuments().exec(),
-    BookInstance.countDocuments().exec(),
-    BookInstance.countDocuments({ status: "Available" }).exec(),
-    Author.countDocuments().exec(),
-    Genre.countDocuments().exec(),
+    countBook(),
+    countBookInstance({}),
+    countBookInstance({ status: "Available" }),
+    countAuthor(),
+    countGenre()
   ]);
 
 
@@ -53,7 +50,6 @@ exports.book_detail = asyncHandler(async (req, res, next) => {
     findAllBookInstances({ book: req.params.id }),
   ]);
 
-  console.log(bookInstances[0].book)
 
   if (book === null) {
     // No results.
@@ -74,8 +70,8 @@ exports.book_detail = asyncHandler(async (req, res, next) => {
 exports.book_create_get = asyncHandler(async (req, res, next) => {
   // Get all authors and genres, which we can use for adding to our book.
   const [allAuthors, allGenres] = await Promise.all([
-    Author.find().sort({ family_name: 1 }).exec(),
-    Genre.find().sort({ name: 1 }).exec(),
+    findAllAuthors(),
+    findAllGenres()
   ]);
 
   res.render("book_form", {
@@ -121,29 +117,30 @@ exports.book_create_post = [
     const errors = validationResult(req);
 
     // Create a Book object with escaped and trimmed data.
-    const book = new Book({
+    const book = {
       title: req.body.title,
       author: req.body.author,
       summary: req.body.summary,
       isbn: req.body.isbn,
       genre: req.body.genre,
-    });
+    };
 
     if (!errors.isEmpty()) {
       // There are errors. Render form again with sanitized values/error messages.
 
       // Get all authors and genres for form.
       const [allAuthors, allGenres] = await Promise.all([
-        Author.find().sort({ family_name: 1 }).exec(),
-        Genre.find().sort({ name: 1 }).exec(),
+        findAllAuthors(),
+        findAllGenres()
       ]);
 
       // Mark our selected genres as checked.
       for (const genre of allGenres) {
-        if (book.genre.includes(genre._id)) {
+        if (book.genre.includes(genre.id)) {
           genre.checked = "true";
         }
       }
+
       res.render("book_form", {
         title: "Create Book",
         authors: allAuthors,
@@ -153,8 +150,9 @@ exports.book_create_post = [
       });
     } else {
       // Data from form is valid. Save book.
-      await book.save();
-      res.redirect(book.url);
+      // TODO: Save book
+      const bookUrl = await createBook(book)
+      res.redirect(bookUrl);
     }
   }),
 ];
@@ -164,8 +162,8 @@ exports.book_create_post = [
 exports.book_delete_get = asyncHandler(async (req, res, next) => {
   // Get details of book and all their books (in parallel)
   const [book, book_instances] = await Promise.all([
-    Book.findById(req.params.id).exec(),
-    BookInstance.find({ book: req.params.id }, 'imprint status').exec(),
+    findBookById(req.params.id),
+    findAllBookInstances({ book: req.params.id }),
   ]);
 
   if (book === null) {
@@ -187,8 +185,8 @@ exports.book_delete_get = asyncHandler(async (req, res, next) => {
 exports.book_delete_post = asyncHandler(async (req, res, next) => {
   // Get details of author and all their books (in parallel)
   const [book, book_instances] = await Promise.all([
-    Book.findById(req.params.id).exec(),
-    BookInstance.find({ book: req.params.id }, "imprint status").exec(),
+    findBookById(req.params.id),
+    findAllBookInstances({ book: req.params.id }),
   ]);
 
   if (book_instances.length > 0) {
@@ -200,8 +198,9 @@ exports.book_delete_post = asyncHandler(async (req, res, next) => {
     });
     return;
   } else {
+    console.log(req.body.bookid)
     // Author has no books. Delete object and redirect to the list of authors.
-    await Book.findByIdAndDelete(req.body.bookid);
+    await deleteBook(req.body.bookid);
     res.redirect("/catalog/books");
   }
 });
@@ -210,9 +209,9 @@ exports.book_delete_post = asyncHandler(async (req, res, next) => {
 exports.book_update_get = asyncHandler(async (req, res, next) => {
   // Get book, authors and genres for form.
   const [book, allAuthors, allGenres] = await Promise.all([
-    Book.findById(req.params.id).populate("author").exec(),
-    Author.find().sort({ family_name: 1 }).exec(),
-    Genre.find().sort({ name: 1 }).exec(),
+    findBookById(req.params.id),
+    findAllAuthors(),
+    findAllGenres(),
   ]);
 
   if (book === null) {
@@ -270,27 +269,27 @@ exports.book_update_post = [
     const errors = validationResult(req);
 
     // Create a Book object with escaped/trimmed data and old id.
-    const book = new Book({
+    const book = {
       title: req.body.title,
       author: req.body.author,
       summary: req.body.summary,
       isbn: req.body.isbn,
       genre: typeof req.body.genre === "undefined" ? [] : req.body.genre,
       _id: req.params.id, // This is required, or a new ID will be assigned!
-    });
+    };
 
     if (!errors.isEmpty()) {
       // There are errors. Render form again with sanitized values/error messages.
 
       // Get all authors and genres for form
       const [allAuthors, allGenres] = await Promise.all([
-        Author.find().sort({ family_name: 1 }).exec(),
-        Genre.find().sort({ name: 1 }).exec(),
+        findAllAuthors(),
+        findAllGenres()
       ]);
 
       // Mark our selected genres as checked.
       for (const genre of allGenres) {
-        if (book.genre.indexOf(genre._id) > -1) {
+        if (book.genre.indexOf(genre.id) > -1) {
           genre.checked = "true";
         }
       }
@@ -304,9 +303,9 @@ exports.book_update_post = [
       return;
     } else {
       // Data from form is valid. Update the record.
-      const updatedBook = await Book.findByIdAndUpdate(req.params.id, book, {});
+      const updatedBook = await updateBook(req.params.id, book);
       // Redirect to book detail page.
-      res.redirect(updatedBook.url);
+      res.redirect(updatedBook);
     }
   }),
 ];

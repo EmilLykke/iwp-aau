@@ -12,10 +12,10 @@
       <select id="author" class="form-control" name="author" required>
         <option value="">--Please select an author--</option>
         <% authors.forEach(function(author) { %>
-          <% if (book && author._id.toString() === book.author._id.toString()) { %>
-            <option value="<%= author._id %>" selected><%= author.name %></option>
+          <% if (book && author.id === book.author.id) { %>
+            <option value="<%= author.id %>" selected><%= author.name %></option>
           <% } else { %>
-            <option value="<%= author._id %>"><%= author.name %></option>
+            <option value="<%= author.id %>"><%= author.name %></option>
           <% } %>
         <% }); %>
       </select>
@@ -33,8 +33,8 @@
       <div>
         <% genres.forEach(function(genre) { %>
           <div style="display: inline; padding-right:10px;">
-            <input class="checkbox-input" type="checkbox" name="genre" id="<%= genre._id %>" value="<%= genre._id %>" <%= genre.checked ? 'checked' : '' %>>
-            <label for="<%= genre._id %>">&nbsp;<%= genre.name %></label>
+            <input class="checkbox-input" type="checkbox" name="genre" id="<%= genre.id %>" value="<%= genre.id %>" <%= genre.checked ? 'checked' : '' %>>
+            <label for="<%= genre.id %>">&nbsp;<%= genre.name %></label>
           </div>
         <% }); %>
       </div>

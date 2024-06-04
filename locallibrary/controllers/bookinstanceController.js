@@ -1,14 +1,13 @@
-const BookInstance = require("../models/bookinstance.model");
-const Book = require("../models/book.model");
 const asyncHandler = require("express-async-handler");
 const { body, validationResult } = require("express-validator");
+const { findAllBookInstances, findBookInstanceById, findAllBooks, createBookInstance, deleteBookInstance , updateBookInstance} = require("../db/databaseService");
 
 
 
 
 // Display list of all BookInstances.
 exports.bookinstance_list = asyncHandler(async (req, res, next) => {
-  const allBookInstances = await BookInstance.find().populate("book").exec();
+  const allBookInstances = await findAllBookInstances()
 
   res.render("bookinstance_list", {
     title: "Book Instance List",
@@ -18,9 +17,8 @@ exports.bookinstance_list = asyncHandler(async (req, res, next) => {
 
 // Display detail page for a specific BookInstance.
 exports.bookinstance_detail = asyncHandler(async (req, res, next) => {
-  const bookInstance = await BookInstance.findById(req.params.id)
-    .populate("book")
-    .exec();
+  const bookInstance = await findBookInstanceById(req.params.id)
+
 
   if (bookInstance === null) {
     // No results.
@@ -38,7 +36,7 @@ exports.bookinstance_detail = asyncHandler(async (req, res, next) => {
 
 // Display BookInstance create form on GET.
 exports.bookinstance_create_get = asyncHandler(async (req, res, next) => {
-  const allBooks = await Book.find({}, "title").sort({ title: 1 }).exec();
+  const allBooks = await findAllBooks({}, {title: 1})
 
   res.render("bookinstance_form", {
     title: "Create BookInstance",
@@ -70,30 +68,30 @@ exports.bookinstance_create_post = [
     const errors = validationResult(req);
 
     // Create a BookInstance object with escaped and trimmed data.
-    const bookInstance = new BookInstance({
+    const bookInstance = {
       book: req.body.book,
       imprint: req.body.imprint,
       status: req.body.status,
-      due_back: req.body.due_back,
-    });
+      due_back: req.body.due_back.toString(),
+    };
 
     if (!errors.isEmpty()) {
       // There are errors.
       // Render form again with sanitized values and error messages.
-      const allBooks = await Book.find({}, "title").sort({ title: 1 }).exec();
+      const allBooks = await findAllBooks({}, {title: 1})
 
       res.render("bookinstance_form", {
         title: "Create BookInstance",
         book_list: allBooks,
-        selected_book: bookInstance.book._id,
+        selected_book: bookInstance.book.id,
         errors: errors.array(),
         bookinstance: bookInstance,
       });
       return;
     } else {
       // Data from form is valid
-      await bookInstance.save();
-      res.redirect(bookInstance.url);
+      const newBookInstance = await createBookInstance(bookInstance)
+      res.redirect(newBookInstance);
     }
   }),
 ];
@@ -102,7 +100,7 @@ exports.bookinstance_create_post = [
 // Display BookInstance delete form on GET.
 exports.bookinstance_delete_get = asyncHandler(async (req, res, next) => {
   // Get details of book and all their books (in parallel)
-  const bookinstance = await BookInstance.findById(req.params.id).exec();
+  const bookinstance = await findBookInstanceById(req.params.id)
 
   if (bookinstance === null) {
     // No results.
@@ -121,7 +119,7 @@ exports.bookinstance_delete_get = asyncHandler(async (req, res, next) => {
 // Handle BookInstance delete on POST.
 exports.bookinstance_delete_post = asyncHandler(async (req, res, next) => {
     // Delete object and redirect to the list of authors.
-    await BookInstance.findByIdAndDelete(req.body.bookinstanceid);
+    await deleteBookInstance(req.body.bookinstanceid)
     res.redirect("/catalog/bookinstances");
 });
 
@@ -129,8 +127,8 @@ exports.bookinstance_delete_post = asyncHandler(async (req, res, next) => {
 exports.bookinstance_update_get = asyncHandler(async (req, res, next) => {
   // Get bookinstance, authors and genres for form.
   const [ bookinstance, allBooks ] = await Promise.all([
-    BookInstance.findById(req.params.id).exec(),
-    Book.find().sort({name: 1}).exec()
+    findBookInstanceById(req.params.id),
+    findAllBooks({}, {title: 1})
   ])
 
   if (bookinstance === null) {
@@ -145,7 +143,7 @@ exports.bookinstance_update_get = asyncHandler(async (req, res, next) => {
     title: "Update BookInstance",
     bookinstance: bookinstance,
     book_list: allBooks,
-    selected_book: bookinstance.book._id,
+    selected_book: bookinstance.book.id,
     errors: undefined
   });
 });
@@ -177,15 +175,15 @@ exports.bookinstance_update_post = [
     const errors = validationResult(req);
 
     // Create a bookinstanceInstance object with escaped/trimmed data and old id.
-    const bookinstance = new BookInstance({
+    const bookinstance = {
       book: req.body.book,
       imprint: req.body.imprint,
       status:  req.body.status,
       due_back: req.body.due_back,
       _id: req.params.id, // This is required, or a new ID will be assigned!
-    });
+    };
 
-    const allBooks  = await Book.find().sort({name: 1}).exec()
+    const allBooks  = await findAllBooks({}, {title: 1})
 
     if (!errors.isEmpty()) {
       // There are errors. Render form again with sanitized values/error messages.
@@ -193,16 +191,17 @@ exports.bookinstance_update_post = [
       res.render("bookinstance_form", {
         title: "Update BookInstance",
         bookinstance: bookinstance,
-        selected_book: bookinstance.book._id,
+        selected_book: bookinstance.book.id,
         book_list: allBooks,
         errors: errors.array(),
       });
       return;
     } else {
       // Data from form is valid. Update the record.
-      const updatedBookInstance = await BookInstance.findByIdAndUpdate(req.params.id, bookinstance, {});
+      const updatedBookInstance = await updateBookInstance(req.params.id, bookinstance)
+
       // Redirect to bookinstance detail page.
-      res.redirect(updatedBookInstance.url);
+      res.redirect(updatedBookInstance);
     }
   }),
 ];

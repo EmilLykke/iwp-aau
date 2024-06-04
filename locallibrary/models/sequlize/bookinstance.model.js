@@ -16,7 +16,7 @@ const BookInstanceSchema = sequelize.define('BookInstance', {
     required: true,
     default: "Maintenance",
   },
-  due_back: { type: DataTypes.TEXT, default: Date.now },
+  due_back: { type: DataTypes.TEXT, default: Date.now() },
 }, {
   tableName: "BookInstance",
   timestamps: false,

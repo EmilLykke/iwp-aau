@@ -8,13 +8,12 @@ const Genre = sequelize.define('Genre', {
     primaryKey: true,
     autoIncrement: true,
   },
-    // Maybe should be enum in furture
-    name: {
+  name: {
         type: DataTypes.TEXT,
         min: 3,
         max: 100,
         required: true
-     },
+  },
 }, {
     tableName: "Genre",
     timestamps: false,

@@ -14,7 +14,7 @@ const BookSchema = sequelize.define('Book',{
   author: { type: DataTypes.INTEGER, primaryKey: true, required: true },
   summary: { type: DataTypes.TEXT, required: true },
   isbn: { type: DataTypes.TEXT, required: true },
-  genre: [{ type: DataTypes.INTEGER, primaryKey: true}],
+  genre: { type: DataTypes.DECIMAL, primaryKey: true },
 }, {
   tableName: "Book",
   timestamps: false,

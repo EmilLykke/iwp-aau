@@ -9,10 +9,10 @@
       <select id="book" class="form-control" name="book" required>
         <option value="">--Please select a book--</option>
         <% book_list.forEach(function(book) { %>
-          <% if (selected_book == book._id.toString()) { %>
-            <option value="<%= book._id %>" selected><%= book.title %></option>
+          <% if (selected_book == book.id) { %>
+            <option value="<%= book.id %>" selected><%= book.title %></option>
           <% } else { %>
-            <option value="<%= book._id %>"><%= book.title %></option>
+            <option value="<%= book.id %>"><%= book.title %></option>
           <% } %>
         <% }); %>
       </select>
