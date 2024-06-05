@@ -171,9 +171,6 @@ exports.book_delete_get = asyncHandler(async (req, res, next) => {
     res.redirect("/catalog/authors");
   }
 
-  console.log(book)
-  console.log(book_instances)
-
   res.render("book_delete", {
     title: "Delete Book",
     book: book,
@@ -198,7 +195,6 @@ exports.book_delete_post = asyncHandler(async (req, res, next) => {
     });
     return;
   } else {
-    console.log(req.body.bookid)
     // Author has no books. Delete object and redirect to the list of authors.
     await deleteBook(req.body.bookid);
     res.redirect("/catalog/books");

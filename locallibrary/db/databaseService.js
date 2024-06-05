@@ -417,7 +417,6 @@ async function findAllGenres() {
         }))
     } else if (global.dbType === 'sqlite') {
         const genres = await GenreSQLite.findAll({ order: [['name', 'ASC']] });
-        console.log(genres);
         return genres.map(genre => ({
             ...genre.dataValues,
             url: genre.url(),

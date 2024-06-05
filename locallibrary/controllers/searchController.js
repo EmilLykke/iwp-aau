@@ -10,7 +10,6 @@ exports.search_get = asyncHandler(async (req, res, next) => {
         searchAuthor(searchValue),
         searchGenre(searchValue),
     ]);
-    // console.log({ books, authors, genres });
 
     res.render("search", { title: "Search", books, authors, genres, searchQuery: searchValue});
 });

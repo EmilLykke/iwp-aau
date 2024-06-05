@@ -107,7 +107,6 @@ exports.bookinstance_delete_get = asyncHandler(async (req, res, next) => {
     res.redirect("/catalog/bookinstances");
   }
 
-  console.log(bookinstance)
 
   res.render("bookinstance_delete", {
     title: "Delete Bookinstance",
